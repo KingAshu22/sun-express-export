@@ -17,6 +17,7 @@ export async function GET(request) {
 
     if (type === "purchase") {
       // Check opening stock and stock inward collections for purchase invoices
+      // For opening stock, check invoiceNumber field
       const openingStock = await db
         .collection("opening_stock")
         .find({ invoiceNumber: { $regex: /^PI\d+$/ } })
@@ -24,15 +25,25 @@ export async function GET(request) {
         .limit(1)
         .toArray()
 
+      // For stock inward, check purchaseInvoiceNumber field
       const stockInward = await db
         .collection("stock_inward")
-        .find({ invoiceNumber: { $regex: /^PI\d+$/ } })
-        .sort({ invoiceNumber: -1 })
+        .find({ purchaseInvoiceNumber: { $regex: /^PI\d+$/ } })
+        .sort({ purchaseInvoiceNumber: -1 })
         .limit(1)
         .toArray()
 
       // Get the highest invoice number from both collections
-      const allInvoices = [...openingStock, ...stockInward]
+      const allInvoices = []
+
+      if (openingStock.length > 0) {
+        allInvoices.push({ invoiceNumber: openingStock[0].invoiceNumber })
+      }
+
+      if (stockInward.length > 0) {
+        allInvoices.push({ invoiceNumber: stockInward[0].purchaseInvoiceNumber })
+      }
+
       if (allInvoices.length > 0) {
         // Sort by invoice number to get the highest
         allInvoices.sort((a, b) => {

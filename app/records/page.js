@@ -126,7 +126,7 @@ export default function Records() {
         const url = window.URL.createObjectURL(blob)
         const a = document.createElement("a")
         a.href = url
-        a.download = `invoice-${record.invoiceNumber}.pdf`
+        a.download = `invoice-${record.invoiceNumber || record.purchaseInvoiceNumber}.pdf`
         document.body.appendChild(a)
         a.click()
         window.URL.revokeObjectURL(url)
@@ -153,6 +153,20 @@ export default function Records() {
   const getPartyName = (partyId) => {
     const party = parties.find((p) => p._id === partyId)
     return party ? party.name : "Unknown Party"
+  }
+
+  const getInvoiceNumber = (record) => {
+    if (record.type === "inward") {
+      return record.purchaseInvoiceNumber || record.invoiceNumber
+    }
+    return record.invoiceNumber
+  }
+
+  const getPartyInvoiceNumber = (record) => {
+    if (record.type === "inward" && record.partyInvoiceNumber) {
+      return record.partyInvoiceNumber
+    }
+    return null
   }
 
   if (loading) {
@@ -255,7 +269,8 @@ export default function Records() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Invoice No.</TableHead>
+                    <TableHead>Our Invoice No.</TableHead>
+                    <TableHead>Party Invoice No.</TableHead>
                     <TableHead>Type</TableHead>
                     <TableHead>Party</TableHead>
                     <TableHead>Date</TableHead>
@@ -267,7 +282,8 @@ export default function Records() {
                 <TableBody>
                   {records.map((record) => (
                     <TableRow key={record._id}>
-                      <TableCell className="font-medium">{record.invoiceNumber}</TableCell>
+                      <TableCell className="font-medium">{getInvoiceNumber(record)}</TableCell>
+                      <TableCell className="text-gray-600">{getPartyInvoiceNumber(record) || "-"}</TableCell>
                       <TableCell>
                         <Badge className={getTypeColor(record.type)}>
                           {record.type === "opening" ? "Opening" : record.type === "inward" ? "Inward" : "Outward"}

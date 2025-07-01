@@ -16,7 +16,8 @@ export default function StockInward() {
   const [nextInvoiceNumber, setNextInvoiceNumber] = useState("")
   const [formData, setFormData] = useState({
     partyId: "",
-    invoiceNumber: "",
+    partyInvoiceNumber: "", // Party's invoice number
+    purchaseInvoiceNumber: "", // Our purchase invoice number
     date: new Date().toISOString().split("T")[0],
     items: [
       {
@@ -77,7 +78,7 @@ export default function StockInward() {
       if (response.ok) {
         const data = await response.json()
         setNextInvoiceNumber(data.invoiceNumber)
-        setFormData((prev) => ({ ...prev, invoiceNumber: data.invoiceNumber }))
+        setFormData((prev) => ({ ...prev, purchaseInvoiceNumber: data.invoiceNumber }))
       }
     } catch (error) {
       console.error("Error fetching next invoice number:", error)
@@ -176,7 +177,8 @@ export default function StockInward() {
         // Reset form and fetch new invoice number
         setFormData({
           partyId: "",
-          invoiceNumber: "",
+          partyInvoiceNumber: "",
+          purchaseInvoiceNumber: "",
           date: new Date().toISOString().split("T")[0],
           items: [
             {
@@ -230,7 +232,7 @@ export default function StockInward() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="party">Purchase Party</Label>
                   <Select
@@ -250,13 +252,23 @@ export default function StockInward() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="invoiceNumber">Purchase Invoice Number</Label>
+                  <Label htmlFor="partyInvoiceNumber">Party Invoice Number</Label>
                   <Input
-                    id="invoiceNumber"
-                    value={formData.invoiceNumber}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, invoiceNumber: e.target.value }))}
-                    placeholder={`Next: ${nextInvoiceNumber}`}
+                    id="partyInvoiceNumber"
+                    value={formData.partyInvoiceNumber}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, partyInvoiceNumber: e.target.value }))}
+                    placeholder="Enter party's invoice number"
                     required
+                  />
+                  <p className="text-sm text-gray-500">Invoice number from supplier</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="purchaseInvoiceNumber">Our Purchase Invoice No.</Label>
+                  <Input
+                    id="purchaseInvoiceNumber"
+                    value={formData.purchaseInvoiceNumber}
+                    readOnly
+                    className="bg-gray-50"
                   />
                   <p className="text-sm text-gray-500">Auto-generated: {nextInvoiceNumber}</p>
                 </div>

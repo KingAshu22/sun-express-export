@@ -14,6 +14,8 @@ export default function EditStockModal({ record, parties, onClose, onSave }) {
   const [formData, setFormData] = useState({
     partyId: record.partyId || "",
     invoiceNumber: record.invoiceNumber || "",
+    partyInvoiceNumber: record.partyInvoiceNumber || "",
+    purchaseInvoiceNumber: record.purchaseInvoiceNumber || "",
     date: record.date || "",
     items: record.items || [],
     subtotal: record.subtotal || 0,
@@ -181,7 +183,7 @@ export default function EditStockModal({ record, parties, onClose, onSave }) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="space-y-2">
               <Label htmlFor="party">{record.type === "outward" ? "Sales" : "Purchase"} Party</Label>
               <Select
@@ -200,15 +202,37 @@ export default function EditStockModal({ record, parties, onClose, onSave }) {
                 </SelectContent>
               </Select>
             </div>
+
+            {record.type === "inward" && (
+              <div className="space-y-2">
+                <Label htmlFor="partyInvoiceNumber">Party Invoice Number</Label>
+                <Input
+                  id="partyInvoiceNumber"
+                  value={formData.partyInvoiceNumber}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, partyInvoiceNumber: e.target.value }))}
+                  placeholder="Party's invoice number"
+                />
+              </div>
+            )}
+
             <div className="space-y-2">
-              <Label htmlFor="invoiceNumber">Invoice Number</Label>
+              <Label htmlFor="invoiceNumber">
+                {record.type === "inward" ? "Our Purchase Invoice No." : "Invoice Number"}
+              </Label>
               <Input
                 id="invoiceNumber"
-                value={formData.invoiceNumber}
-                onChange={(e) => setFormData((prev) => ({ ...prev, invoiceNumber: e.target.value }))}
+                value={record.type === "inward" ? formData.purchaseInvoiceNumber : formData.invoiceNumber}
+                onChange={(e) => {
+                  if (record.type === "inward") {
+                    setFormData((prev) => ({ ...prev, purchaseInvoiceNumber: e.target.value }))
+                  } else {
+                    setFormData((prev) => ({ ...prev, invoiceNumber: e.target.value }))
+                  }
+                }}
                 required
               />
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="date">Date</Label>
               <Input

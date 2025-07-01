@@ -17,7 +17,7 @@ export default function InvoiceModal({ record, party, onClose }) {
         const url = window.URL.createObjectURL(blob)
         const a = document.createElement("a")
         a.href = url
-        a.download = `invoice-${record.invoiceNumber}.pdf`
+        a.download = `invoice-${record.invoiceNumber || record.purchaseInvoiceNumber}.pdf`
         document.body.appendChild(a)
         a.click()
         window.URL.revokeObjectURL(url)
@@ -39,6 +39,13 @@ export default function InvoiceModal({ record, party, onClose }) {
       default:
         return "Invoice"
     }
+  }
+
+  const getOurInvoiceNumber = () => {
+    if (record.type === "inward") {
+      return record.purchaseInvoiceNumber || record.invoiceNumber
+    }
+    return record.invoiceNumber
   }
 
   return (
@@ -76,8 +83,13 @@ export default function InvoiceModal({ record, party, onClose }) {
               <h3 className="font-semibold text-lg mb-4">Invoice Details</h3>
               <div className="space-y-2">
                 <p>
-                  <span className="font-medium">Invoice No:</span> {record.invoiceNumber}
+                  <span className="font-medium">Our Invoice No:</span> {getOurInvoiceNumber()}
                 </p>
+                {record.type === "inward" && record.partyInvoiceNumber && (
+                  <p>
+                    <span className="font-medium">Party Invoice No:</span> {record.partyInvoiceNumber}
+                  </p>
+                )}
                 <p>
                   <span className="font-medium">Date:</span> {new Date(record.date).toLocaleDateString()}
                 </p>
