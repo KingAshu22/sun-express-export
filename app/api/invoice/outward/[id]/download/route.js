@@ -10,14 +10,14 @@ export async function GET(request, { params }) {
     const client = new MongoClient(uri)
     await client.connect()
     const db = client.db("sun-express-export")
-    const openingStock = db.collection("opening_stock")
+    const stockOutward = db.collection("stock_outward")
     const parties = db.collection("parties")
 
-    const stock = await openingStock.findOne({ _id: new ObjectId(id) })
+    const stock = await stockOutward.findOne({ _id: new ObjectId(id) })
 
     if (!stock) {
       await client.close()
-      return NextResponse.json({ message: "Opening stock not found" }, { status: 404 })
+      return NextResponse.json({ message: "Stock outward not found" }, { status: 404 })
     }
 
     // Populate party information
@@ -29,13 +29,13 @@ export async function GET(request, { params }) {
     await client.close()
 
     // Generate HTML content for PDF
-    const htmlContent = generateInvoiceHTML(stock, party, "Purchase Invoice - Opening Stock")
+    const htmlContent = generateInvoiceHTML(stock, party, "Sales Invoice")
 
     // Return the HTML content as a downloadable file
     return new NextResponse(htmlContent, {
       headers: {
         "Content-Type": "text/html",
-        "Content-Disposition": `attachment; filename="opening-stock-${id}.html"`,
+        "Content-Disposition": `attachment; filename="sales-invoice-${id}.html"`,
       },
     })
   } catch (error) {
@@ -155,12 +155,12 @@ function generateInvoiceHTML(invoice, party, title) {
       <div class="invoice-details">
         <div>
           <h3>Invoice Details</h3>
-          <p><strong>Invoice No:</strong> ${invoice.invoiceNumber || "N/A"}</p>
+          <p><strong>Sales Invoice No:</strong> ${invoice.invoiceNumber || "N/A"}</p>
           <p><strong>Date:</strong> ${new Date(invoice.date).toLocaleDateString()}</p>
-          <p><strong>Type:</strong> Opening Stock</p>
+          <p><strong>Type:</strong> Sales Invoice</p>
         </div>
         <div>
-          <h3>Party Details</h3>
+          <h3>Customer Details</h3>
           ${
             party
               ? `
@@ -170,7 +170,7 @@ function generateInvoiceHTML(invoice, party, title) {
             <p><strong>Email:</strong> ${party.email}</p>
             <p><strong>GST No:</strong> ${party.gstNumber || "N/A"}</p>
           `
-              : "<p>Party details not available</p>"
+              : "<p>Customer details not available</p>"
           }
         </div>
       </div>

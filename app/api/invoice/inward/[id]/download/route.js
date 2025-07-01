@@ -10,14 +10,14 @@ export async function GET(request, { params }) {
     const client = new MongoClient(uri)
     await client.connect()
     const db = client.db("sun-express-export")
-    const openingStock = db.collection("opening_stock")
+    const stockInward = db.collection("stock_inward")
     const parties = db.collection("parties")
 
-    const stock = await openingStock.findOne({ _id: new ObjectId(id) })
+    const stock = await stockInward.findOne({ _id: new ObjectId(id) })
 
     if (!stock) {
       await client.close()
-      return NextResponse.json({ message: "Opening stock not found" }, { status: 404 })
+      return NextResponse.json({ message: "Stock inward not found" }, { status: 404 })
     }
 
     // Populate party information
@@ -29,13 +29,13 @@ export async function GET(request, { params }) {
     await client.close()
 
     // Generate HTML content for PDF
-    const htmlContent = generateInvoiceHTML(stock, party, "Purchase Invoice - Opening Stock")
+    const htmlContent = generateInvoiceHTML(stock, party, "Purchase Invoice - Stock Inward")
 
     // Return the HTML content as a downloadable file
     return new NextResponse(htmlContent, {
       headers: {
         "Content-Type": "text/html",
-        "Content-Disposition": `attachment; filename="opening-stock-${id}.html"`,
+        "Content-Disposition": `attachment; filename="stock-inward-${id}.html"`,
       },
     })
   } catch (error) {
@@ -155,9 +155,10 @@ function generateInvoiceHTML(invoice, party, title) {
       <div class="invoice-details">
         <div>
           <h3>Invoice Details</h3>
-          <p><strong>Invoice No:</strong> ${invoice.invoiceNumber || "N/A"}</p>
+          <p><strong>Our Purchase Invoice No:</strong> ${invoice.purchaseInvoiceNumber || invoice.invoiceNumber || "N/A"}</p>
+          ${invoice.partyInvoiceNumber ? `<p><strong>Party Invoice No:</strong> ${invoice.partyInvoiceNumber}</p>` : ""}
           <p><strong>Date:</strong> ${new Date(invoice.date).toLocaleDateString()}</p>
-          <p><strong>Type:</strong> Opening Stock</p>
+          <p><strong>Type:</strong> Stock Inward</p>
         </div>
         <div>
           <h3>Party Details</h3>
