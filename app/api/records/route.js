@@ -11,6 +11,9 @@ export async function GET(request) {
     const startDate = searchParams.get("startDate")
     const endDate = searchParams.get("endDate")
     const itemName = searchParams.get("itemName")
+    const minAmount = searchParams.get("minAmount")
+    const maxAmount = searchParams.get("maxAmount")
+    const status = searchParams.get("status")
 
     const client = new MongoClient(uri)
     await client.connect()
@@ -63,6 +66,14 @@ export async function GET(request) {
         (record) =>
           record.items && record.items.some((item) => item.name.toLowerCase().includes(itemName.toLowerCase())),
       )
+    }
+
+    if (minAmount) {
+      filteredRecords = filteredRecords.filter((record) => (record.grandTotal || 0) >= Number.parseFloat(minAmount))
+    }
+
+    if (maxAmount) {
+      filteredRecords = filteredRecords.filter((record) => (record.grandTotal || 0) <= Number.parseFloat(maxAmount))
     }
 
     // Sort by date (newest first)

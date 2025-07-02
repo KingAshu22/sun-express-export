@@ -11,6 +11,9 @@ import { useToast } from "@/hooks/use-toast"
 import { Plus, Trash2 } from "lucide-react"
 
 export default function StockInward() {
+  const formatAmount = (amount) => {
+    return Number.parseFloat(amount || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })
+  }
   const [parties, setParties] = useState([])
   const [existingItems, setExistingItems] = useState([])
   const [nextInvoiceNumber, setNextInvoiceNumber] = useState("")
@@ -350,7 +353,7 @@ export default function StockInward() {
                         <div className="flex items-end gap-2">
                           <div className="flex-1">
                             <Label>Total</Label>
-                            <Input value={item.total.toFixed(2)} readOnly />
+                            <Input value={formatAmount(item.total)} readOnly />
                           </div>
                           {formData.items.length > 1 && (
                             <Button type="button" variant="outline" size="sm" onClick={() => removeItem(index)}>
@@ -415,23 +418,23 @@ export default function StockInward() {
                   <CardContent className="space-y-2">
                     <div className="flex justify-between">
                       <span>Subtotal:</span>
-                      <span>₹{formData.subtotal.toFixed(2)}</span>
+                      <span>₹{formatAmount(formData.subtotal)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>CGST ({formData.cgst}%):</span>
-                      <span>₹{((formData.subtotal * formData.cgst) / 100).toFixed(2)}</span>
+                      <span>₹{formatAmount((formData.subtotal * formData.cgst) / 100)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>SGST ({formData.sgst}%):</span>
-                      <span>₹{((formData.subtotal * formData.sgst) / 100).toFixed(2)}</span>
+                      <span>₹{formatAmount((formData.subtotal * formData.sgst) / 100)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>IGST ({formData.igst}%):</span>
-                      <span>₹{((formData.subtotal * formData.igst) / 100).toFixed(2)}</span>
+                      <span>₹{formatAmount((formData.subtotal * formData.igst) / 100)}</span>
                     </div>
                     <div className="flex justify-between font-bold text-lg border-t pt-2">
                       <span>Grand Total:</span>
-                      <span>₹{formData.grandTotal.toFixed(2)}</span>
+                      <span>₹{formatAmount(formData.grandTotal)}</span>
                     </div>
                   </CardContent>
                 </Card>

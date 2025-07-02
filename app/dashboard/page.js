@@ -18,6 +18,11 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
+  // Add this function at the top of the component
+  const formatAmount = (amount) => {
+    return Number.parseFloat(amount || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })
+  }
+
   useEffect(() => {
     const checkAuth = () => {
       const session = localStorage.getItem("session")
@@ -105,7 +110,7 @@ export default function Dashboard() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalParties}</div>
+              <div className="text-2xl font-bold">{formatAmount(stats.totalParties)}</div>
             </CardContent>
           </Card>
 
@@ -115,7 +120,7 @@ export default function Dashboard() {
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalItems}</div>
+              <div className="text-2xl font-bold">{formatAmount(stats.totalItems)}</div>
             </CardContent>
           </Card>
 
@@ -125,7 +130,7 @@ export default function Dashboard() {
               <TrendingUp className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{stats.totalInward}</div>
+              <div className="text-2xl font-bold text-green-600">{formatAmount(stats.totalInward)}</div>
             </CardContent>
           </Card>
 
@@ -135,7 +140,7 @@ export default function Dashboard() {
               <TrendingDown className="h-4 w-4 text-red-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{stats.totalOutward}</div>
+              <div className="text-2xl font-bold text-red-600">{formatAmount(stats.totalOutward)}</div>
             </CardContent>
           </Card>
         </div>

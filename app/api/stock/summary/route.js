@@ -3,16 +3,48 @@ import { MongoClient } from "mongodb"
 
 const uri = process.env.MONGODB_URI
 
-export async function GET() {
+export async function GET(request) {
   try {
+    const { searchParams } = new URL(request.url)
+    const partyName = searchParams.get("partyName")
+    const startDate = searchParams.get("startDate")
+    const endDate = searchParams.get("endDate")
+
     const client = new MongoClient(uri)
     await client.connect()
     const db = client.db("sun-express-export")
 
     const stockSummary = new Map()
 
+    // Build date filter
+    const dateFilter = {}
+    if (startDate || endDate) {
+      dateFilter.date = {}
+      if (startDate) {
+        dateFilter.date.$gte = startDate
+      }
+      if (endDate) {
+        dateFilter.date.$lte = endDate
+      }
+    }
+
+    // Get all parties for party name filtering
+    const parties = await db.collection("parties").find({}).toArray()
+    let partyIds = []
+
+    if (partyName && partyName !== "all" && partyName !== "") {
+      const matchingParties = parties.filter((party) => party.name.toLowerCase().includes(partyName.toLowerCase()))
+      partyIds = matchingParties.map((party) => party._id.toString())
+    }
+
+    // Build party filter
+    const partyFilter = partyIds.length > 0 ? { partyId: { $in: partyIds } } : {}
+
+    // Combine filters
+    const combinedFilter = { ...dateFilter, ...partyFilter }
+
     // Process opening stock
-    const openingStock = await db.collection("opening_stock").find({}).toArray()
+    const openingStock = await db.collection("opening_stock").find(combinedFilter).toArray()
     for (const record of openingStock) {
       if (record.items) {
         for (const item of record.items) {
@@ -37,7 +69,7 @@ export async function GET() {
     }
 
     // Process stock inward
-    const stockInward = await db.collection("stock_inward").find({}).toArray()
+    const stockInward = await db.collection("stock_inward").find(combinedFilter).toArray()
     for (const record of stockInward) {
       if (record.items) {
         for (const item of record.items) {
@@ -62,7 +94,7 @@ export async function GET() {
     }
 
     // Process stock outward
-    const stockOutward = await db.collection("stock_outward").find({}).toArray()
+    const stockOutward = await db.collection("stock_outward").find(combinedFilter).toArray()
     for (const record of stockOutward) {
       if (record.items) {
         for (const item of record.items) {

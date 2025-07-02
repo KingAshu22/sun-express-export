@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button"
 import { Printer, Download, X } from "lucide-react"
 
 export default function InvoiceModal({ record, party, onClose }) {
+  const formatAmount = (amount) => {
+    return Number.parseFloat(amount || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })
+  }
+
   const handlePrint = () => {
     window.print()
   }
@@ -145,14 +149,10 @@ export default function InvoiceModal({ record, party, onClose }) {
                   <tr key={index}>
                     <td className="border border-gray-300 px-4 py-2">{item.name}</td>
                     <td className="border border-gray-300 px-4 py-2">{item.hsnCode}</td>
-                    <td className="border border-gray-300 px-4 py-2 text-right">{item.quantity}</td>
-                    <td className="border border-gray-300 px-4 py-2 text-right">
-                      ₹{Number.parseFloat(item.rate).toFixed(2)}
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2 text-right">{item.discount || 0}%</td>
-                    <td className="border border-gray-300 px-4 py-2 text-right">
-                      ₹{Number.parseFloat(item.total).toFixed(2)}
-                    </td>
+                    <td className="border border-gray-300 px-4 py-2 text-right">{formatAmount(item.quantity)}</td>
+                    <td className="border border-gray-300 px-4 py-2 text-right">₹{formatAmount(item.rate)}</td>
+                    <td className="border border-gray-300 px-4 py-2 text-right">{formatAmount(item.discount)}%</td>
+                    <td className="border border-gray-300 px-4 py-2 text-right">₹{formatAmount(item.total)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -165,23 +165,23 @@ export default function InvoiceModal({ record, party, onClose }) {
               <div className="space-y-2 border border-gray-300 p-4">
                 <div className="flex justify-between">
                   <span>Subtotal:</span>
-                  <span>₹{Number.parseFloat(record.subtotal || 0).toFixed(2)}</span>
+                  <span>₹{formatAmount(record.subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>CGST ({record.cgst || 0}%):</span>
-                  <span>₹{((record.subtotal * (record.cgst || 0)) / 100).toFixed(2)}</span>
+                  <span>₹{formatAmount((record.subtotal * (record.cgst || 0)) / 100)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>SGST ({record.sgst || 0}%):</span>
-                  <span>₹{((record.subtotal * (record.sgst || 0)) / 100).toFixed(2)}</span>
+                  <span>₹{formatAmount((record.subtotal * (record.sgst || 0)) / 100)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>IGST ({record.igst || 0}%):</span>
-                  <span>₹{((record.subtotal * (record.igst || 0)) / 100).toFixed(2)}</span>
+                  <span>₹{formatAmount((record.subtotal * (record.igst || 0)) / 100)}</span>
                 </div>
                 <div className="flex justify-between font-bold text-lg border-t pt-2">
                   <span>Grand Total:</span>
-                  <span>₹{Number.parseFloat(record.grandTotal || 0).toFixed(2)}</span>
+                  <span>₹{formatAmount(record.grandTotal)}</span>
                 </div>
               </div>
             </div>
