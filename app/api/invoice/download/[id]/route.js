@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { MongoClient, ObjectId } from "mongodb"
 
-const uri = process.env.MONGODB_URI || "mongodb://localhost:27017/sun-express-export"
+const uri = process.env.MONGODB_URI
 
 export async function GET(request, { params }) {
   try {
