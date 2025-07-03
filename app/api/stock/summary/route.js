@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { MongoClient } from "mongodb"
 
-const uri = process.env.MONGODB_URI
+const uri = process.env.MONGODB_URI || "mongodb://localhost:27017/sun-express-export"
 
 export async function GET(request) {
   try {
@@ -9,6 +9,7 @@ export async function GET(request) {
     const partyName = searchParams.get("partyName")
     const startDate = searchParams.get("startDate")
     const endDate = searchParams.get("endDate")
+    const groupBy = searchParams.get("groupBy") || "item" // item, hsn, or none
 
     const client = new MongoClient(uri)
     await client.connect()
@@ -48,22 +49,48 @@ export async function GET(request) {
     for (const record of openingStock) {
       if (record.items) {
         for (const item of record.items) {
-          const key = `${item.name}_${item.hsnCode}`
+          let key
+          switch (groupBy) {
+            case "hsn":
+              key = item.hsnCode
+              break
+            case "item":
+              key = item.name
+              break
+            default:
+              key = `${item.name}_${item.hsnCode}_${item.description || ""}`
+          }
+
           if (!stockSummary.has(key)) {
             stockSummary.set(key, {
               itemName: item.name,
+              itemDescription: item.description || "",
               hsnCode: item.hsnCode,
               openingStock: 0,
               totalInward: 0,
               totalOutward: 0,
               totalValue: 0,
               totalQuantity: 0,
+              groupBy: groupBy,
+              items: groupBy !== "none" ? [] : undefined,
             })
           }
           const summary = stockSummary.get(key)
           summary.openingStock += Number.parseFloat(item.quantity) || 0
           summary.totalValue += (Number.parseFloat(item.quantity) || 0) * (Number.parseFloat(item.rate) || 0)
           summary.totalQuantity += Number.parseFloat(item.quantity) || 0
+
+          // If grouping, store individual items
+          if (groupBy !== "none" && summary.items) {
+            summary.items.push({
+              name: item.name,
+              description: item.description || "",
+              hsnCode: item.hsnCode,
+              quantity: item.quantity,
+              rate: item.rate,
+              type: "opening",
+            })
+          }
         }
       }
     }
@@ -73,22 +100,48 @@ export async function GET(request) {
     for (const record of stockInward) {
       if (record.items) {
         for (const item of record.items) {
-          const key = `${item.name}_${item.hsnCode}`
+          let key
+          switch (groupBy) {
+            case "hsn":
+              key = item.hsnCode
+              break
+            case "item":
+              key = item.name
+              break
+            default:
+              key = `${item.name}_${item.hsnCode}_${item.description || ""}`
+          }
+
           if (!stockSummary.has(key)) {
             stockSummary.set(key, {
               itemName: item.name,
+              itemDescription: item.description || "",
               hsnCode: item.hsnCode,
               openingStock: 0,
               totalInward: 0,
               totalOutward: 0,
               totalValue: 0,
               totalQuantity: 0,
+              groupBy: groupBy,
+              items: groupBy !== "none" ? [] : undefined,
             })
           }
           const summary = stockSummary.get(key)
           summary.totalInward += Number.parseFloat(item.quantity) || 0
           summary.totalValue += (Number.parseFloat(item.quantity) || 0) * (Number.parseFloat(item.rate) || 0)
           summary.totalQuantity += Number.parseFloat(item.quantity) || 0
+
+          // If grouping, store individual items
+          if (groupBy !== "none" && summary.items) {
+            summary.items.push({
+              name: item.name,
+              description: item.description || "",
+              hsnCode: item.hsnCode,
+              quantity: item.quantity,
+              rate: item.rate,
+              type: "inward",
+            })
+          }
         }
       }
     }
@@ -98,20 +151,46 @@ export async function GET(request) {
     for (const record of stockOutward) {
       if (record.items) {
         for (const item of record.items) {
-          const key = `${item.name}_${item.hsnCode}`
+          let key
+          switch (groupBy) {
+            case "hsn":
+              key = item.hsnCode
+              break
+            case "item":
+              key = item.name
+              break
+            default:
+              key = `${item.name}_${item.hsnCode}_${item.description || ""}`
+          }
+
           if (!stockSummary.has(key)) {
             stockSummary.set(key, {
               itemName: item.name,
+              itemDescription: item.description || "",
               hsnCode: item.hsnCode,
               openingStock: 0,
               totalInward: 0,
               totalOutward: 0,
               totalValue: 0,
               totalQuantity: 0,
+              groupBy: groupBy,
+              items: groupBy !== "none" ? [] : undefined,
             })
           }
           const summary = stockSummary.get(key)
           summary.totalOutward += Number.parseFloat(item.quantity) || 0
+
+          // If grouping, store individual items
+          if (groupBy !== "none" && summary.items) {
+            summary.items.push({
+              name: item.name,
+              description: item.description || "",
+              hsnCode: item.hsnCode,
+              quantity: item.quantity,
+              rate: item.rate,
+              type: "outward",
+            })
+          }
         }
       }
     }

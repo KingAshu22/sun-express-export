@@ -42,7 +42,7 @@ export default function StockInwardInvoice() {
         const url = window.URL.createObjectURL(blob)
         const a = document.createElement("a")
         a.href = url
-        a.download = `stock-inward-${params.id}.pdf`
+        a.download = `stock-inward-${params.id}.html`
         document.body.appendChild(a)
         a.click()
         window.URL.revokeObjectURL(url)
@@ -86,7 +86,7 @@ export default function StockInwardInvoice() {
             </Button>
             <Button onClick={handleDownload}>
               <Download className="mr-2 h-4 w-4" />
-              Download PDF
+              Download HTML
             </Button>
           </div>
         </div>
@@ -111,10 +111,15 @@ export default function StockInwardInvoice() {
               <div className="text-right">
                 <div className="text-sm">
                   <p>
-                    <strong>Invoice No:</strong> {invoice.invoiceNumber}
+                    <strong>Our Purchase Invoice No:</strong> {invoice.purchaseInvoiceNumber || invoice.invoiceNumber}
                   </p>
+                  {invoice.partyInvoiceNumber && (
+                    <p>
+                      <strong>Party Invoice No:</strong> {invoice.partyInvoiceNumber}
+                    </p>
+                  )}
                   <p>
-                    <strong>Date:</strong> {new Date(invoice.date).toLocaleDateString()}
+                    <strong>Date:</strong> {new Date(invoice.date).toLocaleDateString("en-IN")}
                   </p>
                   <p>
                     <strong>Type:</strong> Stock Inward
@@ -128,7 +133,7 @@ export default function StockInwardInvoice() {
                 <thead>
                   <tr className="bg-gray-50">
                     <th className="border border-gray-300 p-2 text-left">S.No</th>
-                    <th className="border border-gray-300 p-2 text-left">Item Name</th>
+                    <th className="border border-gray-300 p-2 text-left">Item Name & Description</th>
                     <th className="border border-gray-300 p-2 text-left">HSN Code</th>
                     <th className="border border-gray-300 p-2 text-right">Qty</th>
                     <th className="border border-gray-300 p-2 text-right">Rate</th>
@@ -140,7 +145,12 @@ export default function StockInwardInvoice() {
                   {invoice.items.map((item, index) => (
                     <tr key={index}>
                       <td className="border border-gray-300 p-2">{index + 1}</td>
-                      <td className="border border-gray-300 p-2">{item.name}</td>
+                      <td className="border border-gray-300 p-2">
+                        <div className="font-medium">{item.name}</div>
+                        {item.description && (
+                          <div className="text-sm text-gray-600 italic mt-1">{item.description}</div>
+                        )}
+                      </td>
                       <td className="border border-gray-300 p-2">{item.hsnCode}</td>
                       <td className="border border-gray-300 p-2 text-right">{item.quantity}</td>
                       <td className="border border-gray-300 p-2 text-right">

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { MongoClient, ObjectId } from "mongodb"
 
-const uri = process.env.MONGODB_URI
+const uri = process.env.MONGODB_URI || "mongodb://localhost:27017/sun-express-export"
 
 export async function GET(request, { params }) {
   try {
@@ -115,6 +115,12 @@ function generateInvoiceHTML(invoice, party, title) {
         .text-center { 
           text-align: center; 
         }
+        .item-description {
+          font-size: 12px;
+          color: #666;
+          font-style: italic;
+          margin-top: 2px;
+        }
         .totals {
           margin-top: 20px;
           display: flex;
@@ -156,7 +162,7 @@ function generateInvoiceHTML(invoice, party, title) {
         <div>
           <h3>Invoice Details</h3>
           <p><strong>Sales Invoice No:</strong> ${invoice.invoiceNumber || "N/A"}</p>
-          <p><strong>Date:</strong> ${new Date(invoice.date).toLocaleDateString()}</p>
+          <p><strong>Date:</strong> ${new Date(invoice.date).toLocaleDateString("en-IN")}</p>
           <p><strong>Type:</strong> Sales Invoice</p>
         </div>
         <div>
@@ -180,7 +186,7 @@ function generateInvoiceHTML(invoice, party, title) {
         <thead>
           <tr>
             <th class="text-center">S.No</th>
-            <th>Item Name</th>
+            <th>Item Name & Description</th>
             <th>HSN Code</th>
             <th class="text-right">Quantity</th>
             <th class="text-right">Rate (₹)</th>
@@ -195,7 +201,10 @@ function generateInvoiceHTML(invoice, party, title) {
                 (item, index) => `
             <tr>
               <td class="text-center">${index + 1}</td>
-              <td>${item.name}</td>
+              <td>
+                <div><strong>${item.name}</strong></div>
+                ${item.description ? `<div class="item-description">${item.description}</div>` : ""}
+              </td>
               <td>${item.hsnCode}</td>
               <td class="text-right">${item.quantity}</td>
               <td class="text-right">${Number.parseFloat(item.rate || 0).toFixed(2)}</td>
@@ -237,7 +246,7 @@ function generateInvoiceHTML(invoice, party, title) {
       <div class="footer">
         <p>Thank you for your business!</p>
         <p>This is a computer generated invoice.</p>
-        <p>Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+        <p>Generated on: ${new Date().toLocaleDateString("en-IN")} at ${new Date().toLocaleTimeString("en-IN")}</p>
       </div>
     </body>
     </html>

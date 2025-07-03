@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Download, ArrowUpDown, ArrowUp, ArrowDown, Filter, X, Calendar } from "lucide-react"
+import { Download, ArrowUpDown, ArrowUp, ArrowDown, Filter, X, Calendar, Group } from "lucide-react"
 
 export default function Summary() {
   const [stockSummary, setStockSummary] = useState([])
@@ -22,6 +22,7 @@ export default function Summary() {
     startDate: "",
     endDate: "",
     balanceFilter: "all", // all, positive, negative, zero
+    groupBy: "none", // none, item, hsn
   })
 
   // Format amount function
@@ -66,6 +67,7 @@ export default function Summary() {
       if (filters.partyName && filters.partyName !== "all") queryParams.append("partyName", filters.partyName)
       if (filters.startDate) queryParams.append("startDate", filters.startDate)
       if (filters.endDate) queryParams.append("endDate", filters.endDate)
+      if (filters.groupBy) queryParams.append("groupBy", filters.groupBy)
 
       const response = await fetch(`/api/stock/summary?${queryParams.toString()}`)
       if (response.ok) {
@@ -157,6 +159,7 @@ export default function Summary() {
       startDate: "",
       endDate: "",
       balanceFilter: "all",
+      groupBy: "none",
     })
     setSortConfig({ key: null, direction: "asc" })
   }
@@ -170,6 +173,7 @@ export default function Summary() {
       // Generate CSV from current filtered/sorted data
       const csvHeaders = [
         "Item Name",
+        "Item Description",
         "HSN Code",
         "Opening Stock",
         "Total Inward",
@@ -181,6 +185,7 @@ export default function Summary() {
 
       const csvRows = filteredData.map((item) => [
         item.itemName,
+        item.itemDescription || "",
         item.hsnCode,
         formatAmount(item.openingStock),
         formatAmount(item.totalInward),
@@ -199,6 +204,7 @@ export default function Summary() {
 
       // Create filename with filter info
       let filename = "stock-summary"
+      if (filters.groupBy !== "none") filename += `-grouped-by-${filters.groupBy}`
       if (filters.partyName && filters.partyName !== "all")
         filename += `-${filters.partyName.replace(/[^a-zA-Z0-9]/g, "")}`
       if (filters.startDate) filename += `-from-${filters.startDate}`
@@ -248,7 +254,23 @@ export default function Summary() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Group By</label>
+                <Select
+                  value={filters.groupBy}
+                  onValueChange={(value) => setFilters((prev) => ({ ...prev, groupBy: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No Grouping</SelectItem>
+                    <SelectItem value="item">Group by Item Name</SelectItem>
+                    <SelectItem value="hsn">Group by HSN Code</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div>
                 <label className="text-sm font-medium mb-2 block">Item Name</label>
                 <Input
@@ -321,7 +343,7 @@ export default function Summary() {
             <div className="flex gap-2 mt-4">
               <Button onClick={applyDateFilter} className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
-                Apply Date Filter
+                Apply Filters
               </Button>
               <Button variant="outline" onClick={clearFilters} className="flex items-center gap-2 bg-transparent">
                 <X className="h-4 w-4" />
@@ -330,6 +352,7 @@ export default function Summary() {
             </div>
             <div className="mt-4 text-sm text-gray-600">
               Showing {filteredData.length} of {stockSummary.length} items
+              {filters.groupBy !== "none" && ` • Grouped by: ${filters.groupBy === "item" ? "Item Name" : "HSN Code"}`}
               {filters.partyName && filters.partyName !== "all" && ` • Party: ${filters.partyName}`}
               {filters.startDate && ` • From: ${formatDate(filters.startDate)}`}
               {filters.endDate && ` • To: ${formatDate(filters.endDate)}`}
@@ -339,7 +362,15 @@ export default function Summary() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Current Stock Balance</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Group className="h-5 w-5" />
+              Current Stock Balance
+              {filters.groupBy !== "none" && (
+                <span className="text-sm font-normal text-gray-600">
+                  (Grouped by {filters.groupBy === "item" ? "Item Name" : "HSN Code"})
+                </span>
+              )}
+            </CardTitle>
             <CardDescription>Item-wise stock summary with inward, outward, and balance quantities</CardDescription>
           </CardHeader>
           <CardContent>
@@ -354,6 +385,7 @@ export default function Summary() {
                           {getSortIcon("itemName")}
                         </div>
                       </TableHead>
+                      <TableHead>Item Description</TableHead>
                       <TableHead className="cursor-pointer hover:bg-gray-50" onClick={() => handleSort("hsnCode")}>
                         <div className="flex items-center">
                           HSN Code
@@ -412,6 +444,9 @@ export default function Summary() {
                     {filteredData.map((item, index) => (
                       <TableRow key={index} className="hover:bg-gray-50">
                         <TableCell className="font-medium">{item.itemName}</TableCell>
+                        <TableCell className="text-sm text-gray-600 italic">
+                          {item.itemDescription || "No description"}
+                        </TableCell>
                         <TableCell>{item.hsnCode}</TableCell>
                         <TableCell className="text-right">{formatAmount(item.openingStock)}</TableCell>
                         <TableCell className="text-right text-green-600">{formatAmount(item.totalInward)}</TableCell>

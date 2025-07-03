@@ -24,6 +24,7 @@ export default function StockOutward() {
     items: [
       {
         name: "",
+        description: "",
         hsnCode: "",
         quantity: "",
         rate: "",
@@ -32,8 +33,8 @@ export default function StockOutward() {
       },
     ],
     subtotal: 0,
-    cgst: 9,
-    sgst: 9,
+    cgst: 0,
+    sgst: 0,
     igst: 0,
     grandTotal: 0,
   })
@@ -138,6 +139,7 @@ export default function StockOutward() {
         ...prev.items,
         {
           name: "",
+          description: "",
           hsnCode: "",
           quantity: "",
           rate: "",
@@ -184,6 +186,7 @@ export default function StockOutward() {
           items: [
             {
               name: "",
+              description: "",
               hsnCode: "",
               quantity: "",
               rate: "",
@@ -192,8 +195,8 @@ export default function StockOutward() {
             },
           ],
           subtotal: 0,
-          cgst: 9,
-          sgst: 9,
+          cgst: 0,
+          sgst: 0,
           igst: 0,
           grandTotal: 0,
         })
@@ -281,8 +284,8 @@ export default function StockOutward() {
                 {formData.items.map((item, index) => (
                   <Card key={index}>
                     <CardContent className="pt-6">
-                      <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
-                        <div className="md:col-span-2">
+                      <div className="grid grid-cols-1 md:grid-cols-8 gap-4">
+                        <div className="md:col-span-1">
                           <Label>Item Name</Label>
                           <Input
                             value={item.name}
@@ -295,6 +298,13 @@ export default function StockOutward() {
                               <option key={i} value={existingItem.name} />
                             ))}
                           </datalist>
+                        </div>
+                        <div className="md:col-span-2">
+                          <Label>Item Description</Label>
+                          <Input
+                            value={item.description}
+                            onChange={(e) => handleItemChange(index, "description", e.target.value)}
+                          />
                         </div>
                         <div>
                           <Label>HSN Code</Label>

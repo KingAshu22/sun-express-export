@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { MongoClient, ObjectId } from "mongodb"
 
-const uri = process.env.MONGODB_URI
+const uri = process.env.MONGODB_URI || "mongodb://localhost:27017/sun-express-export"
 
 export async function GET(request, { params }) {
   try {
@@ -216,6 +216,13 @@ function generatePDFHTML(record, party, type) {
             text-align: center;
         }
         
+        .item-description {
+            font-size: 10px;
+            color: #666;
+            font-style: italic;
+            margin-top: 2px;
+        }
+        
         .totals-section {
             display: flex;
             justify-content: flex-end;
@@ -383,7 +390,7 @@ function generatePDFHTML(record, party, type) {
                 <thead>
                     <tr>
                         <th style="width: 6%;">S.No</th>
-                        <th style="width: 30%;">Item Name</th>
+                        <th style="width: 25%;">Item Name & Description</th>
                         <th style="width: 12%;">HSN Code</th>
                         <th style="width: 10%;">Quantity</th>
                         <th style="width: 14%;">Rate (₹)</th>
@@ -398,7 +405,10 @@ function generatePDFHTML(record, party, type) {
                           (item, index) => `
                         <tr>
                             <td class="text-center">${index + 1}</td>
-                            <td>${item.name}</td>
+                            <td>
+                                <div style="font-weight: bold;">${item.name}</div>
+                                ${item.description ? `<div class="item-description">${item.description}</div>` : ""}
+                            </td>
                             <td class="text-center">${item.hsnCode}</td>
                             <td class="text-right">${formatAmount(item.quantity)}</td>
                             <td class="text-right">₹${formatAmount(item.rate)}</td>

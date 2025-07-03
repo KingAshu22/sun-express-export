@@ -104,6 +104,7 @@ export default function EditStockModal({ record, parties, onClose, onSave }) {
         ...prev.items,
         {
           name: "",
+          description: "",
           hsnCode: "",
           quantity: "",
           rate: "",
@@ -262,8 +263,8 @@ export default function EditStockModal({ record, parties, onClose, onSave }) {
             {formData.items.map((item, index) => (
               <Card key={index}>
                 <CardContent className="pt-6">
-                  <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
-                    <div className="md:col-span-2">
+                  <div className="grid grid-cols-1 md:grid-cols-8 gap-4">
+                    <div className="md:col-span-1">
                       <Label>Item Name</Label>
                       <Input
                         value={item.name}
@@ -276,6 +277,13 @@ export default function EditStockModal({ record, parties, onClose, onSave }) {
                           <option key={i} value={existingItem.name} />
                         ))}
                       </datalist>
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label>Item Description</Label>
+                      <Input
+                        value={item.description}
+                        onChange={(e) => handleItemChange(index, "description", e.target.value)}
+                      />
                     </div>
                     <div>
                       <Label>HSN Code</Label>
